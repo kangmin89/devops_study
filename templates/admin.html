@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드 - 설문 결과</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ec4899;
+            --primary-hover: #db2777;
+            --bg-color: #0f172a;
+            --surface-color: rgba(30, 41, 59, 0.7);
+            --surface-hover: rgba(51, 65, 85, 0.8);
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #31112c 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Elements */
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.5;
+            animation: float 12s infinite ease-in-out alternate;
+        }
+
+        .blob-1 {
+            top: 10%;
+            right: 10%;
+            width: 350px;
+            height: 350px;
+            background: #ec4899;
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+        }
+
+        .blob-2 {
+            bottom: 20%;
+            left: 5%;
+            width: 450px;
+            height: 450px;
+            background: #8b5cf6;
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            animation-delay: -6s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-30px, 40px) rotate(10deg); }
+        }
+
+        /* Glassmorphism Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            background: var(--surface-color);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #f9a8d4, #c4b5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-link {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .stats-list {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 10px;
+        }
+
+        /* Custom Scrollbar */
+        .stats-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .stats-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .stats-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            animation: slideInRight 0.5s ease backwards;
+        }
+
+        /* Staggered animation for list items */
+        .stat-item:nth-child(1) { animation-delay: 0.1s; border-left: 4px solid #ec4899; }
+        .stat-item:nth-child(2) { animation-delay: 0.2s; border-left: 4px solid #8b5cf6; }
+        .stat-item:nth-child(3) { animation-delay: 0.3s; border-left: 4px solid #3b82f6; }
+        .stat-item:nth-child(4) { animation-delay: 0.4s; border-left: 4px solid #10b981; }
+        .stat-item:nth-child(n+5) { animation-delay: 0.5s; border-left: 4px solid #94a3b8; }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .stat-item:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-color);
+            transform: translateX(5px);
+        }
+
+        .answer-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #f1f5f9;
+            word-break: break-all;
+        }
+
+        .count-badge {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            min-width: 28px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background animations -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>응답 통계</h1>
+            <a href="/" class="back-link">설문 참여하기</a>
+        </div>
+
+        <div class="stats-list">
+            {% if stats %}
+                {% for answer, count in stats %}
+                <div class="stat-item">
+                    <span class="answer-text">{{ answer }}</span>
+                    <span class="count-badge">{{ count }}명</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    아직 수집된 응답이 없습니다.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
