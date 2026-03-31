@@ -1,5 +1,9 @@
 name: Build, Push, and Deploy
 
+# Node.js 20 Deprecation 경고를 제거하기 위해 Node 24 환경을 강제로 사용합니다.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches:
