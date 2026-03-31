@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"        # 실제 외부로 열리는 포트 (GUI 접속용)
+    volumes:
+      - ./nginx-conf:/etc/nginx/conf.d
+    networks:
+      - mlops-net
+
+  blue:
+    image: ${DOCKER_IMAGE:-mlops-sentiment-api:latest}
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s  # HuggingFace 모델 로드 시간 확보
+    networks:
+      - mlops-net
+
+  green:
+    image: ${DOCKER_IMAGE:-mlops-sentiment-api:latest}
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - mlops-net
+
+networks:
+  mlops-net:

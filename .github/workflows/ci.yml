@@ -55,21 +55,7 @@ jobs:
           echo "Pulling latest image from Docker Hub..."
           docker pull ${{ secrets.DOCKER_USERNAME }}/mlops-sentiment-api:latest
           
-      - name: Deploy Container
+      - name: Execute Blue-Green Deployment Script
         run: |
-          DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/mlops-sentiment-api:latest"
-          
-          # 기존 컨테이너가 돌고 있으면 강제 종료 및 삭제 (오류 무시)
-          echo "Stopping and removing existing container..."
-          docker stop mlops-api || true
-          docker rm mlops-api || true
-          
-          # 새로운 버전의 컨테이너를 8000포트로 백그라운드 구동 (-d)
-          echo "Starting the newly built container..."
-          docker run -d \
-            --name mlops-api \
-            -p 8000:8000 \
-            --restart unless-stopped \
-            $DOCKER_IMAGE
-            
-          echo "Deployment successful! Check http://localhost:8000/"
+          chmod +x ./deploy.sh
+          ./deploy.sh ${{ secrets.DOCKER_USERNAME }}/mlops-sentiment-api:latest
