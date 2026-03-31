@@ -1,46 +1,38 @@
-name: Build and Push Docker Image
+name: Build, Push, and Deploy
 
 on:
   push:
     branches:
       - main
       - master
-  
-  # Allow manual trigger via GitHub Actions UI
   workflow_dispatch:
 
 jobs:
+  # CI 빌드 및 Push (GitHub 클라우드 러너 사용)
   build-and-push:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
       
-      # Set up Docker Buildx for advanced features like caching
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         
-      # Login to Docker Hub using GitHub Secrets
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           
-      # Automatically extract and generate Docker tags
-      # e.g., 'latest' and the git commit SHA 'sha-1234567'
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # NOTE: You can change 'mlops-sentiment-api' to your preferred repository name on Docker Hub
           images: ${{ secrets.DOCKER_USERNAME }}/mlops-sentiment-api
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
             type=sha
             
-      # Build and push the Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -49,6 +41,35 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # MLOps Tip: Use GitHub Actions cache to speed up PyTorch/Dependency builds significantly
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # CD 배포 (로컬 컴퓨터의 self-hosted 러너 사용)
+  deploy:
+    needs: build-and-push   # 빌드가 성공적으로 끝나야만 실행됨
+    runs-on: self-hosted    # GitHub 러너에 등록한 로컬 PC 환경 지정
+    
+    steps:
+      - name: Pull Docker Image
+        run: |
+          echo "Pulling latest image from Docker Hub..."
+          docker pull ${{ secrets.DOCKER_USERNAME }}/mlops-sentiment-api:latest
+          
+      - name: Deploy Container
+        run: |
+          DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/mlops-sentiment-api:latest"
+          
+          # 기존 컨테이너가 돌고 있으면 강제 종료 및 삭제 (오류 무시)
+          echo "Stopping and removing existing container..."
+          docker stop mlops-api || true
+          docker rm mlops-api || true
+          
+          # 새로운 버전의 컨테이너를 8000포트로 백그라운드 구동 (-d)
+          echo "Starting the newly built container..."
+          docker run -d \
+            --name mlops-api \
+            -p 8000:8000 \
+            --restart unless-stopped \
+            $DOCKER_IMAGE
+            
+          echo "Deployment successful! Check http://localhost:8000/"
